@@ -36,7 +36,7 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://knivier.com/activerse</loc>
+    <loc>https://knivier.com/activerse.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -50,39 +50,95 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
+  <!-- Activerse Wiki hub -->
   <url>
     <loc>https://knivier.com/wiki.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.55</priority>
   </url>
+
+  <!-- Activerse Origin Wiki (2D) -->
   <url>
     <loc>https://knivier.com/ActiWiki/wiki.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
-    <loc>https://knivier.com/AUWIKI/wiki.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.45</priority>
   </url>
   <url>
     <loc>https://knivier.com/ActiWiki/chapter1.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.35</priority>
   </url>
   <url>
     <loc>https://knivier.com/ActiWiki/chapter2.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.35</priority>
   </url>
   <url>
     <loc>https://knivier.com/ActiWiki/chapter3.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/ActiWiki/chapter4.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/ActiWiki/chapter5.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
   </url>
   <url>
     <loc>https://knivier.com/ActiWiki/chapter6.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.35</priority>
+  </url>
+
+  <!-- Activerse Frontier Wiki (3D) -->
+  <url>
+    <loc>https://knivier.com/AUWIKI/wiki.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.45</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/world.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/clock.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/input.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/physics.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/drawing.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/games.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/native.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/config.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.35</priority>
   </url>
 </urlset>

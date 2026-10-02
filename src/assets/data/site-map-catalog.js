@@ -18,7 +18,7 @@ window.SITE_MAP = {
         {
             id: "activerse",
             title: "Activerse",
-            description: "2D Java game engine - marketing site, version log, and wiki."
+            description: "Origin (2D) and Frontier (3D) frameworks — product page, version log, and wikis."
         },
         {
             id: "tools",
@@ -209,42 +209,98 @@ window.SITE_MAP = {
             href: "ActiWiki/chapter1.html",
             description: "Create a Player, a World, and start it from Main.",
             category: "activerse",
-            tags: ["wiki", "chapter"]
+            tags: ["wiki", "chapter", "origin"]
         },
         {
             title: "Wiki - Chapter 2",
             href: "ActiWiki/chapter2.html",
             description: "Activerse.properties, debug overlay, and logs.log.",
             category: "activerse",
-            tags: ["wiki", "chapter"]
+            tags: ["wiki", "chapter", "origin"]
         },
         {
             title: "Wiki - Chapter 3",
             href: "ActiWiki/chapter3.html",
             description: "ACEHS error codes for Engine and Utils.",
             category: "activerse",
-            tags: ["wiki", "chapter"]
+            tags: ["wiki", "chapter", "origin"]
         },
         {
             title: "Wiki - Chapter 4",
             href: "ActiWiki/chapter4.html",
             description: "Images, WAV sound, and where asset files live.",
             category: "activerse",
-            tags: ["wiki", "chapter"]
+            tags: ["wiki", "chapter", "origin"]
         },
         {
             title: "Wiki - Chapter 5",
             href: "ActiWiki/chapter5.html",
             description: "Other actors, collision, collecting items, and a score.",
             category: "activerse",
-            tags: ["wiki", "chapter"]
+            tags: ["wiki", "chapter", "origin"]
         },
         {
             title: "Wiki - Chapter 6",
             href: "ActiWiki/chapter6.html",
             description: "v1.4.2 toolkit: Camera, interpolation, ResourcePaths, utils.",
             category: "activerse",
-            tags: ["wiki", "chapter"]
+            tags: ["wiki", "chapter", "origin"]
+        },
+        {
+            title: "Frontier Wiki - A world",
+            href: "AUWIKI/world.html",
+            description: "Subclass World and Actor in Activerse Frontier; start from cgame.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
+        },
+        {
+            title: "Frontier Wiki - The clock",
+            href: "AUWIKI/clock.html",
+            description: "Monotonic clock, frame timing, body step, and gameplay ticks.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
+        },
+        {
+            title: "Frontier Wiki - Input",
+            href: "AUWIKI/input.html",
+            description: "Stamped input ring, look deltas, key edges, and InputMap bindings.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
+        },
+        {
+            title: "Frontier Wiki - Physics",
+            href: "AUWIKI/physics.html",
+            description: "Player body, Java parity, and the 1 ms Rust integrator.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
+        },
+        {
+            title: "Frontier Wiki - Drawing",
+            href: "AUWIKI/drawing.html",
+            description: "Chunk meshes, UI, audio, and the player avatar.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
+        },
+        {
+            title: "Frontier Wiki - Games",
+            href: "AUWIKI/games.html",
+            description: "Sandbox, OptiShoot, and how sample games sit in cgame.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
+        },
+        {
+            title: "Frontier Wiki - Native core",
+            href: "AUWIKI/native.html",
+            description: "activerse_core Rust library and the FFM Java bridge.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
+        },
+        {
+            title: "Frontier Wiki - Config",
+            href: "AUWIKI/config.html",
+            description: "Activerse.toml, settings.ini, and world saves.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
         },
 
         // Tools

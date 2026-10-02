@@ -51,7 +51,17 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://knivier.com/wiki.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://knivier.com/ActiWiki/wiki.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://knivier.com/AUWIKI/wiki.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -71,7 +81,7 @@
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://knivier.com/ActiWiki/chapterX.html</loc>
+    <loc>https://knivier.com/ActiWiki/chapter6.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>

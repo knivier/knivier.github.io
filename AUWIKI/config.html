@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Activerse Frontier configuration: Activerse.toml, settings.ini, and world saves.">
+    <title>Config — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/config.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a class="active" href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>Config</h1>
+    <p>Three files, three owners. Do not put game preferences in the engine file, or engine switches in a world save.</p>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>File</th><th>Owns</th></tr>
+        </thead>
+        <tbody>
+        <tr><td><code>Activerse.toml</code></td><td>Engine: logging, fps, fov, vsync, MSAA, render distance, fog, weather, save directory.</td></tr>
+        <tr><td><code>settings.ini</code></td><td>This install’s game prefs: look sensitivity, invert, reach, UI scale, key bindings.</td></tr>
+        <tr><td><code>saves/&lt;world&gt;/</code></td><td>That world: player, inventory, edited chunks, environment.</td></tr>
+        </tbody>
+    </table>
+    <p>
+        A writable <code>Activerse.toml</code> in the working directory overrides the copy bundled in
+        <code>src/main/resources</code>. The pause menu writes engine toggles to toml and game toggles to ini.
+    </p>
+
+    <h2>Engine keys</h2>
+    <p>Defaults below match <code>src/main/resources/Activerse.toml</code>.</p>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Key</th><th>Default</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+        <tr><td><code>fps</code></td><td>60</td><td>Gameplay tick rate. Not the 1&nbsp;ms body step, and not the display refresh.</td></tr>
+        <tr><td><code>vsync</code></td><td>true</td><td>Wait for the display on swap.</td></tr>
+        <tr><td><code>fov</code></td><td>70</td><td>Starting vertical field of view, degrees.</td></tr>
+        <tr><td><code>show_debug</code></td><td>true</td><td>Engine debug HUD.</td></tr>
+        <tr><td><code>dynamicLighting</code></td><td>true</td><td>Point lights in the lit shader.</td></tr>
+        <tr><td><code>msaa_samples</code></td><td>4</td><td>0, 2, 4, 8, or 16.</td></tr>
+        <tr><td><code>texture_filter</code></td><td>nearest</td><td><code>nearest</code> or <code>linear</code>.</td></tr>
+        <tr><td><code>render_distance</code></td><td>8</td><td>Horizontal chunk radius.</td></tr>
+        <tr><td><code>render_distance_y</code></td><td>2</td><td>Vertical chunk radius.</td></tr>
+        <tr><td><code>chunk_uploads_per_frame</code></td><td>16</td><td>GPU mesh uploads per frame.</td></tr>
+        <tr><td><code>chunk_mesh_jobs</code></td><td>6</td><td>Concurrent CPU mesh jobs.</td></tr>
+        <tr><td><code>start_hour</code></td><td>10</td><td>Clock hour when a new world starts.</td></tr>
+        <tr><td><code>day_length_seconds</code></td><td>1200</td><td>Real seconds in one full day.</td></tr>
+        <tr><td><code>time_scale</code></td><td>1</td><td>Multiplier on the day clock.</td></tr>
+        <tr><td><code>logging</code></td><td>true</td><td>Master log switch. Files go to <code>log_dir</code> (default <code>logs</code>).</td></tr>
+        <tr><td><code>save_dir</code></td><td>saves</td><td>Root for world folders.</td></tr>
+        </tbody>
+    </table>
+    <p>
+        <code>fps</code> changes how often <code>worldAct</code> and <code>Actor.act</code> run. It does not change
+        <code>nowNs</code> or the 1&nbsp;ms body step. Walk speed in <code>PhysicsSettings</code> is also not a toml
+        key. Set it on the controller.
+    </p>
+
+    <h2>Game keys</h2>
+    <p><code>settings.ini</code> in the working directory. Typical entries:</p>
+    <ul>
+        <li><code>look_sensitivity</code> (0.12), <code>invert_mouse</code></li>
+        <li><code>reach</code> (6), <code>break_repeat_seconds</code> (0.06), <code>place_repeat_seconds</code> (0.08)</li>
+        <li><code>ui_scale</code> (1.35), <code>show_debug_hud</code>, <code>preferred_hotbar_slot</code></li>
+        <li><code>key_*</code> and <code>key_hotbar_1</code> … <code>key_hotbar_9</code> for <code>InputMap</code></li>
+    </ul>
+    <p>
+        If reload and the weather cycle end up on the same key, the map moves weather back to G. That keeps R as reload.
+    </p>
+
+    <h2>Saves</h2>
+    <p>
+        Each world folder holds <code>world.json</code> and a readable <code>world.yaml</code>. The snapshot includes
+        the camera, the environment, streaming settings, and whatever the world adds in
+        <code>capturePersistentState</code>. Sandbox adds the player and, when <code>keep_inventory_on_quit</code> is
+        set, the inventory. <code>dispose</code> writes the snapshot on quit and on a world switch.
+        Loading calls <code>applyPersistentState</code> after <code>prepare</code>.
+    </p>
+    <p>
+        Edited voxel chunks are stored as raw byte arrays keyed by chunk position. Air is 0. Any other byte is
+        <code>BlockType.ordinal() + 1</code>. Append new block types at the end of the enum. Inserting one in the
+        middle changes every saved world.
+    </p>
+</main>
+</div>
+</body>
+</html>

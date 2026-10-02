@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Activerse Frontier wiki: what the 3D engine is, how to run Sandbox and OptiShoot, and where the source lives.">
+    <title>Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/wiki.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a class="active" href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>Activerse Frontier</h1>
+    <p>
+        Activerse Frontier is a 3D Java game engine. You subclass <code>World</code> and <code>Actor</code>, then start
+        a world with <code>Activerse.start</code>. Drawing, audio, and the window are LWJGL (GLFW, OpenGL, OpenAL).
+        Time, stamped input, and the player body step live in a small Rust library, <code>activerse_core</code>,
+        called from Java through the Foreign Function &amp; Memory API.
+    </p>
+    <p>
+        Games are not inside the engine tree. They sit in <code>cgame/</code>. Sandbox is the voxel world.
+        OptiShoot is the third-person range. Both use the same loop.
+    </p>
+
+    <h2>Run a game</h2>
+    <p>From the engine repository, on macOS:</p>
+    <pre class="code-block"><code>./runsandbox.sh
+./runoptishoot.sh</code></pre>
+    <p>On Windows, <code>runsandbox.bat</code> and <code>runoptishoot.bat</code>. Each script compiles the engine,
+        <code>cgame</code>, and the native library, then launches the game. macOS also needs
+        <code>-XstartOnFirstThread</code>, which the shell scripts already pass. Every launch needs:</p>
+    <pre class="code-block"><code>--enable-native-access=ALL-UNNAMED
+--sun-misc-unsafe-memory-access=allow</code></pre>
+    <p>
+        In an IDE, run <code>Main</code> for Sandbox or <code>OptiShoot.OptiShootMain</code> for the range, with those
+        VM options. JDK 25. Worlds save under <code>saves/&lt;name&gt;/</code>.
+    </p>
+    <div class="note">
+        <p>
+            If <code>libactiverse_core</code> does not load, the frame clock falls back to
+            <code>System.nanoTime</code> and physics stays in Java. That fallback is a different epoch. Do not mix
+            those stamps with Rust stamps from an earlier run.
+        </p>
+    </div>
+
+    <h2>Source layout</h2>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Path</th><th>Role</th></tr>
+        </thead>
+        <tbody>
+        <tr><td><code>src/main/java/ActiverseEngine</code></td><td>Worlds, actors, input, physics, voxels, the frame loop.</td></tr>
+        <tr><td><code>src/main/java/ActiverseRender</code></td><td>Window, meshes, shaders, HUD, UI toolkit.</td></tr>
+        <tr><td><code>src/main/java/ActiverseAudio</code></td><td>OpenAL device, buffers, sources.</td></tr>
+        <tr><td><code>src/main/java/ActiverseUtils</code></td><td>Vectors, matrices, logs, config parsers.</td></tr>
+        <tr><td><code>cgame/Sandbox</code></td><td>Voxel game. Entry is <code>cgame/Main.java</code>.</td></tr>
+        <tr><td><code>cgame/OptiShoot</code></td><td>Third-person range. Entry is <code>OptiShootMain</code>.</td></tr>
+        <tr><td><code>native/activerse-core</code></td><td>Rust crate built as <code>libactiverse_core</code>.</td></tr>
+        <tr><td><code>src/main/resources/Activerse.toml</code></td><td>Engine defaults: fps, vsync, fog, render distance.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Where to read next</h2>
+    <ol>
+        <li><a href="world.html">A world</a> — the classes you subclass.</li>
+        <li><a href="clock.html">The clock</a> — the one timestamp everything else uses.</li>
+        <li><a href="input.html">Input</a>, <a href="physics.html">physics</a>, and <a href="drawing.html">drawing</a> when you need those systems.</li>
+        <li><a href="games.html">Games</a> and <a href="native.html">the native core</a> if you are changing Sandbox, OptiShoot, or the Rust step.</li>
+        <li><a href="config.html">Config</a> for toml, ini, and save folders.</li>
+    </ol>
+    <p>
+        JavaDoc is generated in the engine tree, not hosted on this site. From the repository:
+    </p>
+    <pre class="code-block"><code>bash generate-javadoc.sh</code></pre>
+    <p>
+        Open <code>docs/index.html</code>. Start at the <code>ActiverseEngine</code> package, then
+        <code>ActiverseEngine.nativecore</code>. The 2D engine has its own wiki at
+        <a href="../wiki.html">Wiki Hub</a> or the <a href="../ActiWiki/wiki.html">Origin wiki</a>. Frontier does not use that API.
+    </p>
+</main>
+</div>
+</body>
+</html>

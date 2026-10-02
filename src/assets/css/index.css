@@ -396,21 +396,6 @@ img {
     margin: 0;
 }
 
-.contact-email {
-    color: var(--primary-light);
-    font-size: 1.25rem;
-    margin-top: 0.5rem;
-}
-
-.contact-email a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.contact-email a:hover {
-    text-decoration: underline;
-}
-
 .contact-channels {
     text-align: left;
     margin: 0 auto 2rem;
@@ -551,18 +536,28 @@ body::before {
 /* Animation Classes */
 .typing-text {
     display: inline-block;
-    border-right: 3px solid var(--primary);
     white-space: nowrap;
     vertical-align: bottom;
+    position: relative;
+    padding-right: 0.32em;
 }
 
-.typing-text.typing-animate {
-    animation: blink-caret 0.55s step-end infinite;
+.typing-text.typing-animate::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5px;
+    height: 0.85em;
+    border-radius: 1px;
+    background: var(--primary);
+    animation: blink-caret 0.9s step-end infinite;
 }
 
 @keyframes blink-caret {
-    from, to { border-color: var(--primary); }
-    50% { border-color: transparent; }
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
 }
 
 .fade-in-up {
@@ -842,105 +837,65 @@ body::before {
     display: none;
 }
 
-html.site-notice-dismissed #site-notice {
-    display: none;
-}
-
-html:not(.site-notice-dismissed) body {
-    overflow: hidden;
-}
-
-.site-notice {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
+.announce-banner {
+    position: sticky;
+    top: 0;
+    z-index: 40;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem 1.25rem;
-    pointer-events: none;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    padding: 0.65rem 1.25rem;
+    padding-top: max(0.65rem, env(safe-area-inset-top, 0px));
+    text-align: center;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(18, 22, 34, 0.88);
+    backdrop-filter: saturate(160%) blur(18px);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
-.site-notice__backdrop {
-    position: absolute;
-    inset: 0;
-    pointer-events: auto;
-    background: rgba(6, 8, 13, 0.55);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+.announce-banner__text {
+    margin: 0;
+    max-width: 48rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--text-secondary);
 }
 
-.site-notice__card {
-    position: relative;
-    pointer-events: auto;
-    width: min(32rem, 100%);
-    margin-top: clamp(4rem, 14vh, 8rem);
-    padding: 1.75rem 1.75rem 1.5rem;
-    border-radius: 1.25rem;
-    background: rgba(22, 26, 36, 0.82);
-    backdrop-filter: saturate(160%) blur(24px);
-    -webkit-backdrop-filter: saturate(160%) blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow:
-        0 16px 48px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.site-notice__card h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.25rem;
+.announce-banner__text a {
+    color: var(--primary-light);
+    text-decoration: none;
     font-weight: 650;
-    letter-spacing: -0.025em;
-    color: var(--text-primary);
 }
 
-.site-notice__card p {
-    margin: 0 0 1.25rem;
-    color: var(--text-muted);
-    font-size: 0.9375rem;
-    font-weight: 450;
-    line-height: 1.6;
+.announce-banner__text a:hover {
+    text-decoration: underline;
 }
 
-.site-notice__btn {
+.announce-banner__cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    min-height: 2.75rem;
-    padding: 0.7rem 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0.35rem 0.85rem;
     border-radius: var(--radius-pill);
-    background: rgba(99, 102, 241, 0.9);
-    color: #fff;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background var(--transition-fast);
-    -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(99, 102, 241, 0.22);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 650;
+    white-space: nowrap;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
-.site-notice__btn:hover {
-    background: rgba(129, 140, 248, 0.95);
-}
-
-.site-notice__btn:active {
-    background: rgba(79, 70, 229, 0.95);
-}
-
-.site-notice__btn:focus {
-    outline: none;
-}
-
-.site-notice__btn:focus-visible {
-    outline: 2px solid var(--primary-light);
-    outline-offset: 3px;
-}
-
-.site-notice.is-leaving {
-    opacity: 0;
-    transition: opacity 0.2s ease;
+.announce-banner__cta:hover {
+    background: rgba(99, 102, 241, 0.35);
+    border-color: rgba(129, 140, 248, 0.4);
 }
 
 /* Dynamic Island Navigation */
@@ -1077,8 +1032,12 @@ header nav[aria-label="Main navigation"] a.hero-cta--filled:hover {
     
     h1.typing-text {
         animation: none;
-        border-right: none;
+        padding-right: 0;
         text-align: center;
+    }
+
+    h1.typing-text::after {
+        display: none;
     }
     
     /* Better spacing */
@@ -1141,16 +1100,14 @@ header nav[aria-label="Main navigation"] a.hero-cta--filled:hover {
         gap: 0.15rem;
     }
 
-    .site-notice {
-        align-items: center;
-        padding: 1rem;
-        padding-top: max(1rem, env(safe-area-inset-top));
-        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    .announce-banner {
+        gap: 0.45rem 0.75rem;
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
     }
 
-    .site-notice__card {
-        margin-top: 0;
-        padding: 1.4rem 1.25rem 1.25rem;
+    .announce-banner__text {
+        font-size: 0.82rem;
     }
 
     /* Improve button spacing */
@@ -1163,7 +1120,7 @@ header nav[aria-label="Main navigation"] a.hero-cta--filled:hover {
         font-size: 0.9rem;
     }
 
-    a:not(.dynamic-island__item):not(.contact-mail), button:not(#site-notice-dismiss), [role="button"], input, select, textarea {
+    a:not(.dynamic-island__item):not(.contact-mail), button, [role="button"], input, select, textarea {
         min-height: 44px;
         min-width: 44px;
         display: inline-flex;

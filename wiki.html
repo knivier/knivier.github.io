@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Activerse Wiki home: choose Activerse Origin (2D) or Activerse Frontier (3D) documentation.">
+    <title>Activerse Wiki</title>
+    <link rel="canonical" href="https://knivier.com/wiki.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="ActiWiki/wiki-styling.css" rel="stylesheet">
+    <link href="src/images/activerse-logo.png" rel="icon" type="image/png"/>
+    <style>
+        .wiki-pick {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.75rem 0 2rem;
+        }
+        .wiki-pick a {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            padding: 1.25rem 1.35rem;
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.04);
+            transition: background 150ms ease, border-color 150ms ease;
+        }
+        .wiki-pick a:hover {
+            background: var(--md-sys-color-primary-container);
+            border-color: rgba(208, 188, 255, 0.28);
+        }
+        .wiki-pick h2 {
+            margin: 0 0 0.45rem;
+            border: 0;
+            padding: 0;
+            font-size: 1.25rem;
+            color: var(--md-sys-color-primary);
+        }
+        .wiki-pick p {
+            margin: 0;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.95rem;
+        }
+        .wiki-pick .tag {
+            display: inline-block;
+            margin-top: 0.85rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--md-sys-color-outline);
+        }
+        @media (max-width: 640px) {
+            .wiki-pick {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">Activerse Wiki</div>
+    <div class="nav-links">
+        <a class="active" href="wiki.html">Wiki Hub</a>
+        <a href="activerse.html">Activerse</a>
+    </div>
+</nav>
+
+<main>
+    <h1>Activerse Wiki</h1>
+    <p>
+        Documentation for Activerse Frameworks. Pick a framework.
+    </p>
+
+    <div class="wiki-pick" role="navigation" aria-label="Choose a wiki">
+        <a href="ActiWiki/wiki.html">
+            <h2>Activerse Origin</h2>
+            <p>2D Java engine tutorials: worlds, actors, sound, collision, properties, and v1.4.2 APIs.</p>
+            <span class="tag">2D</span>
+        </a>
+        <a href="AUWIKI/wiki.html">
+            <h2>Activerse Frontier</h2>
+            <p>3D engine guide: clock, input, physics, drawing, native core, and sample games.</p>
+            <span class="tag">3D · teaser wiki</span>
+        </a>
+    </div>
+
+</main>
+
+</body>
+</html>

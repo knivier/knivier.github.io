@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Activerse Frontier’s single monotonic clock: nowNs, frameNs, the 1 ms body step, and gameplay ticks.">
+    <title>The clock — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/clock.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a class="active" href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>The clock</h1>
+    <p>
+        There is one clock: <code>NativeCore.nowNs()</code>. It is a monotonic count of nanoseconds from
+        <code>std::time::Instant</code> inside <code>activerse_core</code>. The frame loop, the input ring, and the
+        body step all use that value. GLFW is the window. It is not the timer.
+    </p>
+
+    <h2>One frame</h2>
+    <p><code>GameLoop</code> does this, in order, on the main thread:</p>
+    <ol>
+        <li>Poll GLFW. Mouse and key callbacks stamp samples with <code>nowNs()</code> and push them into the Rust ring.</li>
+        <li>Read <code>nowNs()</code> once. That reading is <code>frameNs</code>.</li>
+        <li>Elapsed time for this frame is <code>frameNs - previous</code>, capped at 0.25&nbsp;s.</li>
+        <li>Apply look in Java from the summed mouse delta. Look is still once per drawn frame.</li>
+        <li>Call <code>world.prepareSimulation()</code>. If the world publishes a character, the Rust step turns on.</li>
+        <li><code>integrateTo(frameNs)</code> runs every 1&nbsp;ms step up to that same timestamp.</li>
+        <li><code>world.pullSimulation()</code> copies the body back when a step actually ran.</li>
+        <li>Gameplay ticks drain the same elapsed time at <code>1 / fps</code>. Each tick calls <code>worldAct()</code>.</li>
+        <li>Stream meshes, draw, swap buffers. Vsync still decides when the picture is shown.</li>
+    </ol>
+    <div class="note">
+        <p>
+            The first <code>integrateTo</code> only anchors the clock and returns 0. A gap longer than 250&nbsp;ms is
+            clamped. A stall does not replay a quarter-second of old input as if it were live.
+        </p>
+    </div>
+
+    <h2>Two rates</h2>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Rate</th><th>What runs</th><th>Clock</th></tr>
+        </thead>
+        <tbody>
+        <tr><td>1&nbsp;ms</td><td>Player body: wish velocity, gravity, jump, voxel collision</td><td><code>frameNs</code></td></tr>
+        <tr><td><code>fps</code> in toml (default 60)</td><td><code>Actor.act</code>, weapons, menus, saves</td><td>the same elapsed</td></tr>
+        <tr><td>Display refresh</td><td>The picture</td><td>vsync, not a second timer</td></tr>
+        </tbody>
+    </table>
+    <p>
+        A key edge 3&nbsp;ms into a 16&nbsp;ms frame moves the body on that 1&nbsp;ms step. The gun and the pixels still
+        update on the gameplay tick and the swap. Record experiment times with <code>NativeCore.nowNs()</code>.
+        Do not call <code>glfwGetTime</code> or <code>System.nanoTime</code> for anything that must line up with input
+        or the body.
+    </p>
+
+    <h2>Publishing a character</h2>
+    <p>
+        The default <code>prepareSimulation</code> does nothing, so the Rust step stays off and
+        <code>FirstPersonController.update</code> or <code>ThirdPersonController.update</code> still performs one Java
+        step of the <code>dt</code> you pass. Sandbox and OptiShoot publish only while play is active: not during
+        loading, not while a menu is open, and not while Sandbox chat or the inventory is open.
+    </p>
+    <pre class="code-block"><code>@Override
+public void prepareSimulation() {
+    if (!playing()) {
+        return;
+    }
+    player.publishToSim(getInput(), getCamera());
+}
+
+@Override
+public void pullSimulation() {
+    if (!NativeCore.characterSteppedThisFrame() || player == null) {
+        return;
+    }
+    player.pullFromSim(getCamera());
+}</code></pre>
+    <p>
+        <code>publishToSim</code> copies settings, bindings, yaw, and the body into Rust, then enables the sim.
+        <code>characterSteppedThisFrame()</code> stays true for that frame even when less than 1&nbsp;ms elapsed and
+        zero steps ran, so <code>update</code> does not also step the body. The loop sets the sim disabled at the
+        start of every frame. Forgetting to publish freezes the character. Publishing during a menu lets them walk
+        through the UI.
+    </p>
+
+    <h2>What is not on this clock yet</h2>
+    <ul>
+        <li>Look is one summed delta per drawn frame. The 1&nbsp;ms steps share the yaw from that sample. They do not each get their own yaw.</li>
+        <li>Swap time is not written down. Vsync chooses when the pixel appears. That instant is not yet a <code>nowNs</code> row.</li>
+        <li>An outside clock (a recorder, a headset, a physical device) is not converted into <code>nowNs</code>. Until you write that conversion, it is a second clock.</li>
+        <li>Diagnostic memory samples in <code>MemoryTracker</code> still use <code>System.nanoTime</code>. They are not frame time.</li>
+    </ul>
+</main>
+</div>
+</body>
+</html>

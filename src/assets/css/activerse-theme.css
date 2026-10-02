@@ -1,5 +1,5 @@
 /* Shared Activerse Material 3 / glass chrome.
-   Used by wiki, version log, and Ultra. Marketing page keeps activerse.css. */
+   Used by wiki, version log, and Frontier. Marketing page keeps activerse.css. */
 
 :root {
     --md-sys-color-primary: #D0BCFF;
@@ -109,15 +109,6 @@ a {
     width: 100%;
 }
 
-.nav-timer {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-full);
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--md-sys-color-on-primary-container);
-    background: var(--gradient-primary);
-}
-
 .nav-links {
     display: flex;
     align-items: center;
@@ -194,10 +185,6 @@ a {
         gap: 0;
         flex-wrap: nowrap;
         width: auto;
-    }
-
-    .nav-timer {
-        display: none;
     }
 
     .nav-links {

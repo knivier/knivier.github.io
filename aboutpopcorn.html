@@ -7,7 +7,7 @@
     <meta content="About Popcorn Kernel" property="og:title">
     <meta content="Constraints-first overview of the x86-64 Multiboot2 kernel, pops, and host build loop." property="og:description">
     <meta content="website" property="og:type">
-    <title>About Popcorn Kernel Framework</title>
+    <title>About Popcorn</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="src/assets/css/aboutpopcorn.css" rel="stylesheet">
     <script defer src="src/assets/data/popcorn-site-config.js"></script>
@@ -25,17 +25,10 @@
 <div class="container">
     <h1>About Popcorn</h1>
 
-    <div class="map-callout">
-        <p>Interactive hierarchy, boot chain, and Mermaid flow diagrams derived from the v0.6 tree-same names as <code>core/</code> and <code>pops/</code>. The <strong>source catalog</strong> lists every file with a connection graph.</p>
-        <div class="map-callout-links">
-            <a data-popcorn-page-href="kernel" href="popcorn-kernel.html">Operation map</a>
-            <a data-popcorn-page-href="source" href="popcorn-source.html">Source catalog</a>
-        </div>
-    </div>
-
     <div class="section">
         <h2>What is Popcorn?</h2>
-        <p><strong>Target:</strong> x86-64 ELF linked at <code>0x100000</code> with a Multiboot2 header (<code>link.ld</code>, <code>kernel.asm</code> entry <code>start</code> &rarr; identity map &rarr; long mode &rarr; <code>kmain</code>). <strong>Runtime:</strong> ring-0 VGA at <code>0xB8000</code>, PIC + IDT (timer <code>0x20</code>, keyboard <code>0x21</code>, syscall <code>0x80</code>), <strong>VMM</strong> (boot 1&nbsp;GiB identity map, per-task PML4, CR3 on switch), <strong>PMM</strong> (4&nbsp;KiB frames + bitmap from Multiboot2 mmap), IRQ1 scancode queue consumed by the shell with <code>HLT</code>, PIT re-enabled at console handoff with scheduler bootstrap guards, static task stacks, ~21 syscalls, nine pops. <strong>Host loop:</strong> <code>src/build/</code> scripts and <code>popcorn_build/</code> produce kernel + ISO; QEMU boots GRUB &rarr; your image. Version <strong>0.6</strong> is pre-1.0 and educational-not a production OS.</p>
+        <p>Popcorn is a growing x86-64 kernel framework that demonstrates low-level operating system concepts. It is designed to be approachable for learners while still providing insight into real-world OS mechanics.</p>
+
     </div>
 
     <div class="section">
@@ -71,7 +64,7 @@
             </div>
             <div class="feature-item">
                 <h3>Timers, scheduling &amp; syscalls</h3>
-                <p>PIT-driven preemption with bootstrap guards (<code>bootstrap_on_kmain_stack</code>, first-tick skip, <code>context_looks_sane</code>); syscall table from 0.5 (fork/wait/mmap/munmap/stat/ioctl and related handlers) remains experimental.</p>
+                <p>PIT-driven preemption with bootstrap guards (<code>bootstrap_on_kmain_stack</code>, first-tick skip, <code>context_looks_sane</code>).</p>
             </div>
             <div class="feature-item">
                 <h3>Hardware introspection</h3>
@@ -178,15 +171,7 @@
     </div>
     <div class="section">
         <h2>Current Status & Limitations</h2>
-        <p>Popcorn is currently in version <strong>0.6</strong> (pre-release on branch <code>1.6</code>) and marked as unstable below v1.0. This release adds:</p>
-        <ul style="list-style: none; margin-left: 1rem;">
-            <li>✦ Everything from 0.5: console, pops, ISO/QEMU loop, syscalls, hardware introspection</li>
-            <li>✦ VMM + PMM rewrite (identity boot map, frame bitmap, per-task PML4)</li>
-            <li>✦ IRQ keyboard queue + shell <code>HLT</code> wait path (no main-loop port polling)</li>
-            <li>✦ Timer re-enabled at console handoff with scheduler bootstrap guardrails</li>
-            <li>✦ Unified <code>src/build/</code> tooling (linux.sh, macos.sh, popcorn_build package)</li>
-            <li>✦ Scrollback fix on macOS QEMU builds</li>
-        </ul>
+        <p>Popcorn is currently in version <strong>0.6</strong> and marked as unstable. <a href="https://github.com/knivier/Popcorn/releases">View the release notes</a>.</p>
         <p><strong>Work in Progress:</strong> User processes, full demand paging, and production-grade scheduling are still future work. Soak-test locally (boot &rarr; many shell commands &rarr; Dolphin) before treating 0.6 as demo-stable.</p>
         <p><strong>Contributions:</strong> Special thanks to Swarnim A for the Intel book reference that made keyboard inputs possible for this kernel.</p>
     </div>
@@ -201,7 +186,7 @@
         entries.forEach((entry) => {
             if (entry.isIntersecting) {
                 entry.target.classList.add("visible");
-            }
+            }   
         });
     }, { threshold: 0.1 });
 

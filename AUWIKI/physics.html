@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Activerse Frontier physics: the body, one-step parity with Java, and the 1 ms Rust integrator.">
+    <title>Physics — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/physics.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a class="active" href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>Physics</h1>
+    <p>
+        <code>PhysicsBody</code> is an axis-aligned box. Position is the feet, at the bottom center, not the center of
+        mass. Default size is 0.6&nbsp;m wide and 1.8&nbsp;m tall, with the eye 1.62&nbsp;m above the feet.
+        Velocity and acceleration are mutable <code>Vec3</code>s. Acceleration is cleared at the end of each step.
+    </p>
+
+    <h2>One step</h2>
+    <p>
+        <code>PhysicsEngine.step(body, world, dt)</code> integrates that many seconds. Order is fixed: sample the
+        blocks overlapping the body, add gravity (scaled in fluid, plus buoyancy), integrate acceleration, apply
+        drag, clamp terminal velocity, then move X, Y, and Z separately. A colliding axis move is reverted and that
+        axis velocity is zeroed. A downward hit sets <code>onGround</code>. A short downward probe
+        (<code>groundStick</code>, default 0.08&nbsp;m) keeps the body grounded on shallow slopes and stair lips.
+    </p>
+    <p>
+        <code>applyMoveWish</code> sets horizontal velocity from a desired XZ direction. Length is normalized, then
+        scaled by walk or sprint speed and by the surface speed multiplier. In fluid the speed is reduced further
+        and multiplied by the water block’s speed multiplier. With no wish, a grounded body stops. An airborne body
+        keeps 92% of its horizontal velocity.
+    </p>
+    <p>
+        <code>tryJump</code> sets upward velocity from <code>defaultJumpVelocity</code> times the surface jump
+        multiplier. In fluid, holding jump raises the body toward <code>swimUpSpeed</code> instead.
+    </p>
+    <div class="note">
+        <p>
+            When the native library is loaded, these three methods run in Rust and match the Java formulas for that
+            single <code>dt</code>. The 1&nbsp;ms frame loop does not call <code>step</code> again. It integrates
+            inside Rust up to <code>frameNs</code>. Sixteen 1&nbsp;ms steps are not the same numbers as one 16&nbsp;ms
+            step. That difference is the point of the fast clock.
+        </p>
+    </div>
+
+    <h2>Defaults</h2>
+    <p><code>PhysicsSettings</code> starts at outdoor values. Change them on the instance you pass to the controller. They are not toml keys.</p>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Field</th><th>Default</th></tr>
+        </thead>
+        <tbody>
+        <tr><td>Gravity</td><td>−28 m/s²</td></tr>
+        <tr><td>Terminal velocity</td><td>−55 m/s</td></tr>
+        <tr><td>Air drag</td><td>0.03</td></tr>
+        <tr><td>Walk / sprint</td><td>6.2 / 12.2 m/s</td></tr>
+        <tr><td>Jump velocity</td><td>11.8 m/s</td></tr>
+        <tr><td>Swim-up speed</td><td>6.2 m/s</td></tr>
+        <tr><td>Fluid gravity scale</td><td>0.35</td></tr>
+        </tbody>
+    </table>
+    <p>
+        OptiShoot replaces walk and sprint with 8.4 and 13.5. Sandbox keeps the defaults. First person also uses a
+        coyote window of 0.14&nbsp;s and a jump buffer of 0.18&nbsp;s. Those constants live on
+        <code>FirstPersonController</code> and are copied into Rust when the sim is published. Third person jumps on
+        the rising edge of the jump key and has no coyote window.
+    </p>
+
+    <h2>Voxels</h2>
+    <p>
+        <code>VoxelPhysicsQuery.getBlock</code> returns the block at integer coordinates, or null for air and for
+        chunks that are not loaded. Solids stop the body. Fluids set drag and buoyancy from the block prototype in
+        <code>BlockRegistry</code>. The block under the feet sets friction, speed, and jump multipliers for the next
+        wish.
+    </p>
+    <p>
+        A one-off <code>step</code> against any query copies the nearby cells into a Rust scratch volume, then
+        integrates. The 1&nbsp;ms loop does not do that. It reads the voxel mirror: every chunk <code>ChunkStore</code>
+        loads or edits is uploaded as raw bytes (0 is air, otherwise <code>BlockType.ordinal() + 1</code>). Unloaded
+        space is air, same as a null query.
+    </p>
+    <p>
+        Chunks are 16³. <code>ChunkStreamingManager</code> loads a Chebyshev square in XZ times a Y range from
+        <code>render_distance</code> and <code>render_distance_y</code>. Empty chunks are published with no GPU
+        buffer. The load screen counts those as finished. It does not wait for a mesh that will never exist.
+    </p>
+
+    <h2>Controllers</h2>
+    <p>
+        <code>FirstPersonController</code> faces with <code>camera</code> yaw, builds a wish from WASD, steps, then
+        writes the eye position back onto the camera. Falling below Y = −20 respawns at the stored point.
+    </p>
+    <p>
+        <code>ThirdPersonController</code> keeps its own yaw and pitch. The camera sits on the look ray behind the
+        eyes. Default boom length is 4&nbsp;m. A voxel ray shortens the boom when a wall is in the way.
+        <code>setMoveMul</code> scales speed for aim and weapons. Crouch multiplies that by 0.55. The view cycle is
+        <code>cyclePerspective</code>.
+    </p>
+</main>
+</div>
+</body>
+</html>

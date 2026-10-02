@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="How to subclass World and Actor in Activerse Frontier and start them from cgame.">
+    <title>A world — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/world.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a class="active" href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>A world</h1>
+    <p>
+        A game is a <code>World</code>. Things in that world are <code>Actor</code>s. You do not construct the window
+        yourself. <code>Activerse.start</code> creates the window, the renderer, audio, the camera, and <code>Input</code>,
+        then runs <code>GameLoop</code> until the window closes.
+    </p>
+
+    <h2>Start</h2>
+    <pre class="code-block"><code>import ActiverseEngine.Activerse;
+
+public class Main {
+    public static void main(String[] args) {
+        Activerse.start(new MyWorld());
+    }
+}</code></pre>
+    <p>
+        Put this file under <code>cgame/</code>, not under <code>src/</code>. Maven compiles <code>cgame</code> as a
+        second source root into <code>target/classes</code>. Sandbox’s entry is the default-package class
+        <code>Main</code>. OptiShoot’s entry is <code>OptiShoot.OptiShootMain</code>.
+    </p>
+    <p>
+        <code>Activerse.switchWorld</code> replaces the active world without tearing down GLFW, OpenGL, or OpenAL.
+        It is safe to call from a UI callback. The switch is applied on the loop thread.
+    </p>
+
+    <h2>World</h2>
+    <p>
+        <code>prepare()</code> is abstract and runs once, after the window and camera exist. Spawn actors and turn on
+        chunk streaming there. <code>showBootLoadingOverlay()</code> defaults to true, so a loading card is up during
+        that work. Title screens return false.
+    </p>
+    <p>
+        <code>worldAct()</code> runs on the gameplay tick, at the <code>fps</code> value in <code>Activerse.toml</code>
+        (default 60). Weapons, menus, and block edits belong there. If you enabled the Rust body step, do not also
+        integrate that body inside <code>worldAct</code>. See <a href="clock.html">the clock</a>.
+    </p>
+    <pre class="code-block"><code>public class MyWorld extends World {
+    @Override
+    public void prepare() {
+        addObject(new Crate(), 2f, 1f, 2f);
+    }
+
+    @Override
+    protected void worldAct() {
+        // gameplay at the configured fps
+    }
+}</code></pre>
+    <p>
+        <code>addObject(actor, x, y, z)</code> places an actor in world metres. <code>onEnter()</code> runs when the
+        world becomes active, including after a switch. The default captures the mouse for look.
+        <code>onEscapePressed()</code> returns true if the world handled Escape. Returning false asks the loop to
+        close the window.
+    </p>
+
+    <h2>Actor</h2>
+    <p>
+        <code>act()</code> is abstract and runs once per gameplay tick while the actor is in the world and not
+        tick-inert. Static scenery should override <code>isTickInert()</code> and return true so the loop does not
+        call <code>act()</code> on every crate.
+    </p>
+    <p>
+        An actor owns a <code>Transform</code>, an optional <code>Mesh</code>, and a <code>Material</code>.
+        <code>setColor</code> tints the material. Removing an actor sets it removed. The world skips removed actors
+        on later ticks.
+    </p>
+    <div class="note">
+        <p>
+            <code>act()</code> is not the 1&nbsp;ms clock. A long <code>act()</code> delays the next poll. Keep it to
+            gameplay. Movement of the player body is the Rust step, described on the clock page.
+        </p>
+    </div>
+
+    <h2>What the loop gives you</h2>
+    <p>After <code>prepare</code>, the world can read the objects <code>Activerse.start</code> created:</p>
+    <ul>
+        <li><code>getWindow()</code>, <code>getRenderer()</code>, <code>getCamera()</code>, <code>getInput()</code></li>
+        <li><code>getEnvironment()</code> for time of day, weather, and fog</li>
+        <li><code>getChunkStreaming()</code> when voxel streaming is on</li>
+        <li><code>getUi()</code> for the UI canvas, if the world built one</li>
+    </ul>
+    <p>
+        <code>handlesLookInput()</code> tells the loop to pass cursor deltas to <code>applyFrameLook</code> instead of
+        <code>Camera.turn</code>. OptiShoot does this so the orbit camera and the weapon share one look sample.
+        Sandbox leaves it false and lets the camera turn itself.
+    </p>
+</main>
+</div>
+</body>
+</html>

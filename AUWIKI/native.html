@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="The activerse_core Rust library: what it owns, how Java calls it, and how it is built.">
+    <title>Native core — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/native.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a class="active" href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>Native core</h1>
+    <p>
+        <code>native/activerse-core</code> is a Rust crate with library name <code>activerse_core</code>. The release
+        build produces <code>libactiverse_core.dylib</code> on macOS, <code>libactiverse_core.so</code> on Linux, and
+        <code>activerse_core.dll</code> on Windows. <code>mvn compile</code> runs <code>cargo build --release</code>
+        in that directory. Java loads it with <code>SymbolLookup.libraryLookup</code> from
+        <code>native/activerse-core/target/release</code>, or from <code>-Dactiverse.native.path</code> /
+        <code>-Dactiverse.native.dir</code>.
+    </p>
+
+    <h2>What Rust owns</h2>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Piece</th><th>Rust</th><th>Java keeps</th></tr>
+        </thead>
+        <tbody>
+        <tr><td><code>now_ns</code></td><td>Monotonic <code>Instant</code></td><td><code>GameLoop</code> samples it once as <code>frameNs</code></td></tr>
+        <tr><td>Input ring</td><td>Samples of mouse, key, and button, each with <code>t_ns</code></td><td>Bindings, chat text, UI edges</td></tr>
+        <tr><td><code>integrate_to</code></td><td>1&nbsp;ms steps up to <code>frameNs</code>, 250&nbsp;ms cap</td><td>When the sim is enabled</td></tr>
+        <tr><td>Character step</td><td>Wish, gravity, jump, coyote while enabled</td><td>The durations and the policy</td></tr>
+        <tr><td>Voxel mirror</td><td>Chunk bytes and material table for collision</td><td>The source chunks, meshes, saves</td></tr>
+        </tbody>
+    </table>
+    <p>
+        Rendering, audio, UI, commands, inventory, and <code>Actor.act</code> are not in this crate. Do not move them
+        here to “make the frame faster.” The frame is already timed by this clock. Draw time is the GPU and vsync.
+    </p>
+
+    <h2>How a call crosses</h2>
+    <p>
+        <code>NativeCore</code> is the only Java type that should invoke the library. It keeps one session for the
+        process, created at class init. Methods take primitives and a packed 80-byte body (20 fields, 4 bytes each,
+        no padding): position, velocity, acceleration, size, eye height, ground and fluid flags, then surface and
+        fluid coefficients.
+    </p>
+    <p>
+        <code>GameLoop</code> is the caller of <code>integrateTo</code>. A world enables the step by publishing a
+        controller, which calls <code>setSimEnabled(true)</code>. Game code that only needs a timestamp calls
+        <code>NativeCore.nowNs()</code>. Everything else on <code>NativeCore</code> is for the loop, the controllers,
+        and <code>ChunkStore</code>.
+    </p>
+    <p>
+        The input ring holds 4096 samples. A push past that returns 1 and drops the new sample. Key state is updated
+        as samples arrive, then rewound and replayed inside <code>integrate_to</code> so a press is applied on the
+        millisecond it happened, not for the whole frame.
+    </p>
+
+    <h2>Build and check</h2>
+    <pre class="code-block"><code>cd native/activerse-core
+cargo test
+
+# from the engine root
+bash generate-javadoc.sh
+mvn test</code></pre>
+    <p>
+        Rust tests cover the clock anchor, a one-millisecond key press, look sums, a fall onto a mirrored floor, and
+        a single 1/60&nbsp;s step against the Java gravity formula. Java tests in
+        <code>PhysicsEngineNativeParityTest</code> compare one explicit <code>dt</code> with the Java reference for
+        a fall, a floor hit, a sprint wish, a jump, and water.
+    </p>
+    <div class="note">
+        <p>
+            <code>NativeCore.reset()</code> clears the ring, the character, the clock anchor, and the voxel mirror.
+            Tests call it. A running game must not. <code>ChunkStore.clear()</code> drops mirrored chunks without
+            resetting the clock.
+        </p>
+    </div>
+</main>
+</div>
+</body>
+</html>

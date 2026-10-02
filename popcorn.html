@@ -7,7 +7,7 @@
     <meta content="Popcorn Kernel" property="og:title">
     <meta content="A small learn-by-reading OS kernel: boot in QEMU, use the text console, then dive into the operation map for full technical detail." property="og:description">
     <meta content="website" property="og:type">
-    <title>Popcorn Kernel Framework</title>
+    <title>The Popcorn Project</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="src/assets/css/popcorn.css" rel="stylesheet">
     <script defer src="src/assets/data/popcorn-site-config.js"></script>
@@ -45,8 +45,6 @@
                 <span class="spec-chip">Timers &amp; preemptive scheduling</span>
                 <span class="spec-chip">Runs in QEMU</span>
             </div>
-            <p>Popcorn is a <strong>learning kernel</strong>: a small operating-system core you can boot in an emulator, read line by line, and change without fighting a huge codebase. Version <strong>0.6</strong> adds real <strong>virtual memory</strong> (boot identity map plus per-task page tables), a <strong>physical frame allocator</strong> driven by the Multiboot2 memory map, and an <strong>IRQ keyboard queue</strong> so the shell stays responsive under timer preemption. After init, you get a simple <strong>text console</strong> while the PIT still feeds the scheduler-with guardrails so boot does not context-switch too early.</p>
-            <p class="hero-lead-more">If you already know OS terms, see the <a data-popcorn-page-href="kernel" href="popcorn-kernel.html">operation map</a> for boot flow and interrupts, or the <a data-popcorn-page-href="source" href="popcorn-source.html">source catalog</a> for every <code class="font-mono">core/</code> and <code class="font-mono">pops/</code> file and how they link.</p>
         </div>
 
         <div class="terminal" role="region" aria-label="Demo terminal">

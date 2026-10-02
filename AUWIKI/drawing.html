@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Drawing, chunk meshes, UI, audio, and the player avatar in Activerse Frontier.">
+    <title>Drawing — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/drawing.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a class="active" href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>Drawing</h1>
+    <p>
+        The picture is Java and OpenGL. Rust does not submit draw calls. <code>Window</code> owns the GLFW window.
+        <code>Renderer</code> draws chunk meshes, actors, the HUD, and the loading card, then the loop swaps buffers.
+    </p>
+
+    <h2>Window and camera</h2>
+    <p>
+        <code>Activerse.start</code> opens a 1280×720 window titled Activerse Frontier. On macOS the process must be
+        started with <code>-XstartOnFirstThread</code> or GLFW will not run. <code>pollEvents</code> and
+        <code>swapBuffers</code> stay on that thread.
+    </p>
+    <p>
+        <code>Camera</code> stores position, yaw, pitch, and vertical field of view. Yaw 0 looks along +X.
+        <code>turn</code> applies cursor pixels times <code>mouseSensitivity</code>, with optional invert on Y.
+        Pitch is clamped. <code>writeForward</code> and <code>writeUp</code> feed the audio listener each frame.
+    </p>
+    <p>
+        <code>vsync</code> in <code>Activerse.toml</code> defaults to true. The swap waits for the display.
+        Turning it off does not make <code>nowNs</code> the present time. It only stops the wait. The engine does
+        not yet record the timestamp of the swap.
+    </p>
+
+    <h2>Chunks on the GPU</h2>
+    <p>
+        <code>ChunkMesher</code> builds a <code>MeshData</code> from a <code>VoxelChunk</code> and the neighbour
+        solidity query. Workers mesh off the main thread. <code>pumpUploads</code> creates the GL buffers on the
+        main thread, nearest chunks first, up to <code>chunk_uploads_per_frame</code>.
+    </p>
+    <p>
+        An empty chunk is queued without a worker and is marked published with no buffer.
+        <code>getGpuMeshCount()</code> therefore stays below the chunk count whenever part of the column is air.
+        <code>getMeshPublishedCount()</code> includes those empty chunks. <code>WorldLoadGate</code> uses the
+        published count. The overlay closes once every loaded chunk is published and the generate, mesh, and upload
+        queues are empty, after <code>minDisplaySeconds</code> (default 0.9&nbsp;s). It no longer waits out a timeout
+        because air never produced a mesh.
+    </p>
+    <p>
+        <code>msaa_samples</code> is 0, 2, 4, 8, or 16. Default is 4. <code>texture_filter</code> is
+        <code>nearest</code> or <code>linear</code>. <code>dynamicLighting</code> turns point lights on in the lit
+        shader. Fog distances are <code>fog_start</code> and <code>fog_end</code>.
+    </p>
+
+    <h2>Actors, skins, UI</h2>
+    <p>
+        An actor with a mesh is drawn in its transform. <code>PlayerAvatar</code> is the third-person figure used by
+        OptiShoot: head, body, arms, and legs, plus overlay layers. <code>PlayerSkin.load</code> reads a 64×64 PNG,
+        or the older 64×32 layout, and detects slim arms. One texel is 1/16&nbsp;m, so a 32-texel figure is 2&nbsp;m
+        tall. <code>Material</code> can discard low-alpha texels for those overlays.
+    </p>
+    <p>
+        UI is <code>ActiverseRender.ui</code>: <code>UiCanvas</code>, buttons, labels, sliders, text fields, item
+        slots, and <code>UiInventoryPanel</code> (9 hotbar slots and 27 storage slots). The canvas updates from
+        <code>Input</code> when no loading card and no chat is open. Hit tests use framebuffer pixels.
+    </p>
+    <p>
+        <code>LoadingOverlay</code> is a single global card. <code>WorldLoadGate</code> drives its progress. The bar
+        stays at or below 92% until the world is actually ready, then the gate hides it.
+    </p>
+
+    <h2>Audio</h2>
+    <p>
+        <code>AudioEngine.init</code> opens the OpenAL device during <code>Activerse.start</code> and
+        <code>shutdown</code> closes it. Each frame the loop sets the listener to the camera position, forward, and
+        up. <code>SoundBuffer</code> holds decoded PCM. <code>WavLoader</code> reads WAV files. <code>SoundSource</code>
+        is a positioned voice. Game code plays sources. The clock does not schedule audio.
+    </p>
+</main>
+</div>
+</body>
+</html>

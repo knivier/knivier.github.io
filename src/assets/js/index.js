@@ -144,7 +144,7 @@ function initTypingAnimation() {
     }
 
     const fullText = typingElement.textContent.trim() || 'Knivier';
-    const msPerChar = 72;
+    const msPerChar = 97;
 
     typingElement.textContent = '';
     typingElement.classList.add('typing-animate');
@@ -261,37 +261,6 @@ function initDynamicIsland() {
 
 document.addEventListener('DOMContentLoaded', () => {
     try {
-        const notice = document.getElementById('site-notice');
-        const dismissBtn = document.getElementById('site-notice-dismiss');
-
-        if (notice && dismissBtn) {
-            dismissBtn.focus();
-
-            const dismissNotice = () => {
-                if (notice.classList.contains('is-leaving')) return;
-                notice.classList.add('is-leaving');
-                notice.setAttribute('aria-hidden', 'true');
-                let finished = false;
-                const finish = () => {
-                    if (finished) return;
-                    finished = true;
-                    notice.style.display = 'none';
-                    document.documentElement.classList.add('site-notice-dismissed');
-                };
-                setTimeout(finish, 220);
-            };
-
-            dismissBtn.addEventListener('click', dismissNotice);
-            notice.querySelectorAll('[data-site-notice-dismiss]').forEach((el) => {
-                el.addEventListener('click', dismissNotice);
-            });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !notice.classList.contains('is-leaving')) {
-                    dismissNotice();
-                }
-            });
-        }
-
         document.querySelectorAll('a[href^="#"]:not(.dynamic-island__item)').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();

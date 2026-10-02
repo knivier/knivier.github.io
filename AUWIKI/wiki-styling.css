@@ -1,0 +1,203 @@
+@import url("../src/assets/css/activerse-theme.css");
+
+body {
+    margin: 0;
+    background: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    font-family: var(--font-family);
+    line-height: 1.55;
+}
+
+nav.top {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.75rem;
+    background: rgba(28, 27, 31, 0.92);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+nav.top .logo {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+    justify-self: start;
+}
+
+nav.top .nav-links {
+    display: flex;
+    gap: 0.4rem;
+    justify-self: end;
+}
+
+nav.top a {
+    color: var(--md-sys-color-on-surface-variant);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-sm);
+}
+
+nav.top a:hover,
+nav.top a.active {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.shell {
+    display: grid;
+    grid-template-columns: 15.5rem minmax(0, 52rem);
+    gap: 2.5rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+    align-items: start;
+}
+
+aside {
+    position: sticky;
+    top: 4.25rem;
+}
+
+aside h2 {
+    margin: 0 0 0.6rem;
+    padding: 0;
+    border: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--md-sys-color-outline);
+}
+
+aside ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+aside a {
+    display: block;
+    padding: 0.35rem 0.55rem;
+    margin: 0 0 0.15rem;
+    border-radius: var(--radius-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+aside a:hover,
+aside a.active {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+main h1 {
+    font-size: 2.15rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    color: var(--md-sys-color-primary);
+    letter-spacing: -0.02em;
+}
+
+main h2 {
+    font-size: 1.35rem;
+    color: var(--md-sys-color-secondary);
+    margin: 2.1rem 0 0.65rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.3rem;
+}
+
+main h3 {
+    font-size: 1.05rem;
+    color: var(--md-sys-color-on-surface);
+    margin: 1.35rem 0 0.4rem;
+}
+
+p, li {
+    font-size: 1.02rem;
+    margin-bottom: 0.85rem;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+ul, ol {
+    padding-left: 1.2rem;
+}
+
+a {
+    color: var(--md-sys-color-primary);
+}
+
+.note {
+    margin: 1.1rem 0;
+    padding: 0.85rem 1rem;
+    background: var(--glass-bg-elevated);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+}
+
+.note p {
+    margin: 0;
+}
+
+table.wiki-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8rem 0 1.4rem;
+    font-size: 0.95rem;
+}
+
+table.wiki-table th,
+table.wiki-table td {
+    text-align: left;
+    padding: 0.45rem 0.65rem;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--md-sys-color-on-surface-variant);
+    vertical-align: top;
+}
+
+table.wiki-table th {
+    color: var(--md-sys-color-primary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+code {
+    font-family: var(--font-family-mono);
+    font-size: 0.88em;
+    background: var(--glass-bg-elevated);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.35rem;
+    padding: 0.08rem 0.32rem;
+    color: var(--md-sys-color-primary);
+}
+
+pre, pre.code-block {
+    background: var(--md-sys-color-surface-dim);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    color: var(--md-sys-color-primary);
+    font-family: var(--font-family-mono);
+    font-size: 0.84rem;
+    line-height: 1.5;
+}
+
+pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+}

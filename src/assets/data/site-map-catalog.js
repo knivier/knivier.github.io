@@ -177,11 +177,25 @@ window.SITE_MAP = {
             tags: ["javadoc", "api", "docs"]
         },
         {
-            title: "ActiWiki home",
+            title: "Activerse Wiki home",
+            href: "wiki.html",
+            description: "Hub for Activerse documentation: choose Origin (2D) or Frontier (3D).",
+            category: "activerse",
+            tags: ["wiki"]
+        },
+        {
+            title: "Activerse Origin Wiki",
             href: "ActiWiki/wiki.html",
             description: "Chapter 0: v1.4.2 overview, layout, and how to run Main.java.",
             category: "activerse",
-            tags: ["wiki"]
+            tags: ["wiki", "origin"]
+        },
+        {
+            title: "Activerse Frontier Wiki",
+            href: "AUWIKI/wiki.html",
+            description: "3D engine overview: worlds, clock, input, physics, and sample games.",
+            category: "activerse",
+            tags: ["wiki", "frontier"]
         },
         {
             title: "Developers Insider Release 2",
@@ -226,8 +240,8 @@ window.SITE_MAP = {
             tags: ["wiki", "chapter"]
         },
         {
-            title: "Wiki - Chapter X",
-            href: "ActiWiki/chapterX.html",
+            title: "Wiki - Chapter 6",
+            href: "ActiWiki/chapter6.html",
             description: "v1.4.2 toolkit: Camera, interpolation, ResourcePaths, utils.",
             category: "activerse",
             tags: ["wiki", "chapter"]

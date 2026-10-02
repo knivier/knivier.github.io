@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Input in Activerse Frontier: the stamped ring, look deltas, key edges, and InputMap bindings.">
+    <title>Input — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/input.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a class="active" href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>Input</h1>
+    <p>
+        <code>Input</code> is built with the window. It installs GLFW callbacks for the cursor, keys, mouse buttons,
+        characters, and focus. Gameplay code reads it through <code>world.getInput()</code>. You do not poll OS
+        devices yourself.
+    </p>
+
+    <h2>The ring and the poll</h2>
+    <p>Two records exist on purpose.</p>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Record</th><th>When it is written</th><th>What you use it for</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Rust input ring</td>
+            <td>Inside the callback, stamped with <code>nowNs()</code></td>
+            <td>The 1&nbsp;ms body step. A press that lasts one millisecond only affects that step.</td>
+        </tr>
+        <tr>
+            <td>Java edges</td>
+            <td><code>beginFrame()</code>, once after <code>pollEvents</code></td>
+            <td><code>wasTabPressed</code>, <code>wasEscapePressed</code>, chat keys, clicks for UI.</td>
+        </tr>
+        </tbody>
+    </table>
+    <p>
+        <code>isKeyDown(int)</code> asks GLFW whether the key is down now. It is the right call for “is sprint held
+        this gameplay tick.” It is not a history. The ring is the history.
+    </p>
+    <p>
+        Key auto-repeat is ignored. A press and a release are the samples. Mouse motion larger than 40 pixels on one
+        axis is dropped, which rejects a focus glitch. <code>consumeLookDelta</code> then applies a 0.15 pixel
+        deadzone and returns the sum for this frame. Call it once. A second call in the same frame reads zeros.
+    </p>
+
+    <h2>Look</h2>
+    <p>
+        If <code>handlesLookInput()</code> is false, the loop calls <code>camera.turn(dx, dy)</code>. Sensitivity and
+        invert live on the camera. If the world handles look, <code>applyFrameLook</code> receives the same summed
+        delta. OptiShoot uses that to orbit the third-person camera and to counter weapon recoil.
+    </p>
+    <p>
+        <code>setLookActive(false)</code> releases the cursor and suppresses look deltas. Menus do this.
+        <code>setTextCapture(true)</code> does the same and queues typed characters for chat.
+        <code>drainChars</code> empties that queue into a <code>StringBuilder</code>.
+    </p>
+
+    <h2>Bindings</h2>
+    <p>
+        <code>InputMap</code> maps <code>GameAction</code> values to GLFW key codes. Defaults are WASD, space, left
+        shift, left control, E for inventory, and the number row for the hotbar. Persist them as <code>key_*</code>
+        entries in <code>settings.ini</code>. <code>isDown(input, action)</code> is the check gameplay should call,
+        not a hardcoded <code>GLFW_KEY_W</code>.
+    </p>
+    <p>
+        <code>GameAction.PERSPECTIVE</code> is the view cycle: first person, third-person back, third-person front.
+        Fire and aim are mouse buttons. The map stores <code>-1</code> for those. <code>Input.wasLeftClicked</code>
+        and <code>isMouseButtonDown</code> cover them.
+    </p>
+    <p>
+        When the character sim is enabled, <code>publishToSim</code> copies the current bindings into Rust. Rebinding
+        in the pause menu takes effect on the next frame, because publish runs every frame.
+    </p>
+
+    <h2>Cursor for UI</h2>
+    <p>
+        <code>getCursorFramebuffer</code> writes the cursor in framebuffer pixels, scaled for a retina window. UI hit
+        testing uses that, not the raw GLFW cursor, which is in window coordinates.
+    </p>
+</main>
+</div>
+</body>
+</html>

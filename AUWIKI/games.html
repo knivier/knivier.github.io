@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#1C1B1F">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Sandbox and OptiShoot: where they live, how they start, and what they use from the engine.">
+    <title>Games — Activerse Frontier Wiki</title>
+    <link rel="canonical" href="https://knivier.com/AUWIKI/games.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="wiki-styling.css" rel="stylesheet">
+    <link href="../src/images/activerse-logo.png" rel="icon" type="image/png"/>
+</head>
+<body>
+<nav class="top">
+    <a class="logo" href="wiki.html">Activerse Frontier Wiki</a>
+    <div class="nav-links">
+        <a href="../wiki.html">Wiki Hub</a>
+        <a href="../activerse.html#frontier">Home</a>
+    </div>
+</nav>
+<div class="shell">
+<aside>
+    <h2>Guide</h2>
+    <ol>
+        <li><a href="wiki.html">Overview</a></li>
+        <li><a href="world.html">A world</a></li>
+        <li><a href="clock.html">The clock</a></li>
+        <li><a href="input.html">Input</a></li>
+        <li><a href="physics.html">Physics</a></li>
+        <li><a href="drawing.html">Drawing</a></li>
+        <li><a class="active" href="games.html">Games</a></li>
+        <li><a href="native.html">Native core</a></li>
+        <li><a href="config.html">Config</a></li>
+    </ol>
+</aside>
+<main>
+    <h1>Games</h1>
+    <p>
+        Sandbox and OptiShoot are ordinary worlds under <code>cgame/</code>. They do not get a private loop. Both
+        publish a character into the Rust step while you are in the world with the cursor captured, and both keep
+        weapons, menus, and rules in Java.
+    </p>
+
+    <h2>Sandbox</h2>
+    <p>
+        Package <code>Sandbox</code>. <code>Main</code> starts <code>TitleWorld</code>. New World and World Select
+        construct a <code>SandboxWorld</code> with a save name. The player is a <code>FirstPersonController</code>.
+        Terrain is a <code>ChunkStreamingManager</code> with a heightmap generator. Edited chunks are stored beside
+        the world save.
+    </p>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Input</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+        <tr><td>Mouse</td><td>Look</td></tr>
+        <tr><td>W A S D</td><td>Walk</td></tr>
+        <tr><td>Shift</td><td>Sprint</td></tr>
+        <tr><td>Space</td><td>Jump, or swim up</td></tr>
+        <tr><td>Hold left mouse, or Q</td><td>Break the targeted block</td></tr>
+        <tr><td>Hold right mouse</td><td>Place the hotbar block</td></tr>
+        <tr><td>E</td><td>Inventory. Click slots to swap.</td></tr>
+        <tr><td>1–9</td><td>Hotbar slot</td></tr>
+        <tr><td>T or /</td><td>Chat and commands</td></tr>
+        </tbody>
+    </table>
+    <p>
+        <code>SandboxGameplay</code> handles the hotbar, breaking, placing, and the sprint field-of-view bump.
+        <code>SandboxMenus</code> is the title flow, pause, and inventory. <code>SandboxCommands</code> registers
+        chat commands, including give. The body does not simulate while the load gate is up, while chat is open,
+        while the inventory is open, or while look is released.
+    </p>
+
+    <h2>OptiShoot</h2>
+    <p>
+        Package <code>OptiShoot</code>. <code>OptiShootMain</code> starts <code>OptiShootWorld</code> directly.
+        The player is a <code>ThirdPersonController</code> with faster walk and sprint. The figure is a
+        <code>PlayerAvatar</code> built from <code>PlayerSkin.load("sk1.png", "skins/sk1.png")</code>. Weapons are
+        <code>WeaponController</code> plus definitions from <code>OptiShootArsenal</code>. Hits are
+        <code>Hitscan</code> against practice targets. None of that is in Rust.
+    </p>
+    <table class="wiki-table">
+        <thead>
+        <tr><th>Input</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+        <tr><td>Mouse</td><td>Orbit look. Right mouse aims and slows movement.</td></tr>
+        <tr><td>Left mouse</td><td>Fire</td></tr>
+        <tr><td>R</td><td>Reload</td></tr>
+        <tr><td>View key (default F5)</td><td>First person or third-person back</td></tr>
+        <tr><td>Tab</td><td>Pause</td></tr>
+        <tr><td>Escape</td><td>Quit confirm</td></tr>
+        </tbody>
+    </table>
+    <p>
+        <code>prepareSimulation</code> passes <code>movementMultiplier</code>: the current weapon’s move scale, times
+        0.78 while aiming. The Rust step uses that scale for the whole frame’s 1&nbsp;ms steps. Recoil is applied in
+        Java on top of the orbit angles and is not part of the body integrator.
+    </p>
+    <p>
+        The load gate is tightened here: mesh ratio 0.35 and a 1.6&nbsp;s timeout, because the arena is small.
+        Sandbox keeps the engine defaults (ratio 0.72, timeout 12&nbsp;s) and now finishes when published meshes
+        settle instead of waiting for that timeout.
+    </p>
+
+    <h2>Adding another game</h2>
+    <p>
+        Create a package under <code>cgame/</code>. Subclass <code>World</code>. Start it from a <code>main</code>
+        in that tree. If the player should move on the 1&nbsp;ms clock, publish a
+        <code>FirstPersonController</code> or <code>ThirdPersonController</code> from <code>prepareSimulation</code>
+        and pull it back before <code>worldAct</code>. If you only need actors and a camera, leave those methods
+        empty.
+    </p>
+</main>
+</div>
+</body>
+</html>

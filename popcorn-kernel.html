@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
-    <meta content="Popcorn v0.6 operation map: boot chain, VMM/PMM, keyboard queue, init order, scheduling guardrails, Mermaid flows - source-aligned." name="description">
+    <meta content="Popcorn v0.7 operation map: UEFI + GRUB boot, Rust drivers, VMM/PMM, shell, syscalls." name="description">
     <meta content="Popcorn - Operation map" property="og:title">
-    <meta content="Interactive hierarchy + diagrams for the x86-64 Multiboot2 kernel." property="og:description">
+    <meta content="How Popcorn boots and runs in the current tree." property="og:description">
     <meta content="website" property="og:type">
     <title>Popcorn - Operation map</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,14 +24,14 @@
 <main class="kernel-main">
     <section class="kernel-hero">
         <h1>Operation map</h1>
-        <p class="lead">How Popcorn boots and runs in the v0.6 tree: GRUB Multiboot2 loads the ELF, <code class="font-mono">start</code> builds an identity map and enters long mode, <code class="font-mono">kmain</code> runs <code class="font-mono">init_boot_screen</code> (PMM/VMM bring-up via <code class="font-mono">memory_init</code>, timer, scheduler), then <code class="font-mono">init_transition_to_console</code> enables keyboard IRQs, re-enables the PIT toward <code class="font-mono">scheduler_tick</code>, and enters the shell loop that dequeues scancodes (not port polling).</p>
+        <p class="lead">How Popcorn boots and runs in the v0.7 tree. UEFI (<code class="font-mono">BOOTX64.EFI</code>) or GRUB Multiboot2 loads the kernel, asm enters long mode, <code class="font-mono">kmain</code> / <code class="font-mono">init</code> bring up memory and Rust drivers, then the shell runs over the display and keyboard drives.</p>
         <div class="spec-chips" aria-label="Constraints">
+            <span class="spec-chip">UEFI + GRUB</span>
             <span class="spec-chip">ELF64 @ 0x100000</span>
-            <span class="spec-chip">1 GiB identity map</span>
-            <span class="spec-chip">Per-task PML4 / CR3</span>
-            <span class="spec-chip">IRQ1 → key queue</span>
-            <span class="spec-chip">PIT + bootstrap guards</span>
-            <span class="spec-chip">9 pops · QEMU ISO</span>
+            <span class="spec-chip">C core · Rust drivers</span>
+            <span class="spec-chip">PMM ≤16 GiB · VMM 4-level</span>
+            <span class="spec-chip">/dev + catalog</span>
+            <span class="spec-chip">CI test-uefi</span>
         </div>
     </section>
 
@@ -66,46 +66,38 @@
   PIT[PIT IRQ0] --> PIC1[PIC master]
   KB[Keyboard IRQ1] --> PIC1
   PIC1 --> CPU[CPU interrupt]
-  CPU --> IDT[IDT dispatch]
-  IDT --> T0[timer_handler asm]
-  IDT --> K0[keyboard_handler asm]
-  IDT --> S0[syscall_handler_asm]
-  T0 --> T1[timer_interrupt_handler C]
-  T1 --> TH["tick_handler: scheduler_tick"]
-  K0 --> K1[keyboard_handler_main C]
-  K1 --> Q[key_queue push]
-  Q --> SH2[kmain / Dolphin dequeue]
-  S0 --> SD[syscall_dispatch C]</pre>
+  CPU --> IDT[IDT / irq table]
+  IDT --> T0[timer path]
+  IDT --> K0[kbd trampoline]
+  IDT --> S0[syscall int 0x80]
+  T0 --> T1[timer_interrupt_handler]
+  T1 --> TH[scheduler_tick]
+  K0 --> K1[Rust /dev/kbd]
+  K1 --> SH2[shell / Dolphin]
+  S0 --> SD[syscall_dispatch]</pre>
             </div>
         </div>
 
         <div class="diagram-card">
-            <h3>Lifecycle - host to shell</h3>
+            <h3>Lifecycle: host to shell</h3>
             <div class="mermaid-wrap">
 <pre class="mermaid">flowchart TB
-  subgraph Host["Host (build and QEMU)"]
-    ISO[GRUB ISO] --> QEMU[QEMU -cdrom]
+  subgraph Host["Host"]
+    BUILD["core.sh / popcorn_build"] --> ART[ELF + ISO/img]
+    ART --> QEMU[QEMU UEFI or GRUB]
   end
-  subgraph Guest["Guest (Popcorn kernel)"]
-    QEMU --> ENTRY["start: kernel.asm"]
-    ENTRY --> KM[kmain]
-    KM --> INIT[init_boot_screen]
-    INIT --> MEM[memory_init]
-    INIT --> TIM[timer_init]
-    INIT --> SCH[scheduler_init]
-    INIT --> SYS[syscall_init]
-    INIT --> POP[register_pop modules]
-    INIT --> GO[init_transition_to_console]
-    GO --> MB[multiboot2_parse]
-    GO --> IDT[idt_init + PIC]
-    GO --> KB[kb_init]
-    GO --> TE["timer_enable + tick to scheduler_tick"]
-    GO --> SH[Shell: dequeue + HLT loop]
-    IRQ0[PIT IRQ0] --> TICK[timer_interrupt_handler]
-    TICK --> ST[scheduler_tick guarded]
-    IRQ1[KB IRQ1] --> KH[keyboard_handler_main → queue]
-    INT80[int 0x80] --> SC[syscall_dispatch]
-    SH --> EX[execute_command]
+  subgraph Guest["Guest"]
+    QEMU --> BOOT["UEFI BOOTX64 or GRUB"]
+    BOOT --> ENTRY["kernel.asm start"]
+    ENTRY --> KM[kmain / init]
+    KM --> MEM[memory_init PMM+VMM]
+    KM --> RUST[rust_init + drives]
+    KM --> IDT[idt + PIC]
+    KM --> SHELL[shell loop]
+    RUST --> SCR[tty0 / fb0]
+    RUST --> KBD[/dev/kbd]
+    SHELL --> SCR
+    SHELL --> KBD
   end
   Host --> Guest</pre>
             </div>
@@ -113,65 +105,67 @@
     </section>
 
     <section class="doc-section" aria-labelledby="reference-heading">
-        <h2 id="reference-heading">Reference sections</h2>
+        <h2 id="reference-heading">Reference</h2>
 
         <details class="doc-block">
-            <summary>0 · Repository layout</summary>
+            <summary>Layout</summary>
             <div class="doc-block__body">
                 <pre>Popcorn/
+├── scripts/          # core.sh, popcorn_build/, QEMU helpers
 ├── src/
 │   ├── link.ld
-│   ├── core/
-│   ├── pops/
-│   ├── includes/
-│   └── build/linux.sh · macos.sh · popcorn_build/  (host)</pre>
-                <p>Only the linked ELF runs inside QEMU; Python and shell helpers are host tooling.</p>
+│   ├── core/         # C + asm kernel
+│   ├── rust/         # popcorn_kernel crate
+│   ├── uefi/         # BOOTX64.EFI loader
+│   ├── pops/         # remaining C pops (Dolphin)
+│   └── includes/
+└── target/           # build outputs</pre>
+                <p>Only the linked ELF (and UEFI loader) run in the guest. Scripts are host-side.</p>
             </div>
         </details>
 
         <details class="doc-block">
-            <summary>1 · Boot chain (GRUB → start → kmain)</summary>
+            <summary>Boot</summary>
             <div class="doc-block__body">
-                <pre>GRUB (guest)
-  └─ multiboot2 /boot/kernel
-       └─ loads ELF to link address
-            └─ jumps to symbol `start` in core/kernel.asm</pre>
-                <p><code>start</code> saves the Multiboot2 info pointer, builds a 1&nbsp;GiB identity map (2&nbsp;MiB huge pages), enables long mode, sets <code>rsp</code>, calls <code>kmain</code>. ASM exports connect IRQ, exceptions, and syscall gates to C.</p>
+                <pre>UEFI: BOOTX64.EFI → handoff → kernel
+GRUB: Multiboot2 ISO → ELF @ 0x100000 → start
+
+start (kernel.asm)
+  identity / direct map
+  long mode
+  kmain → init → shell</pre>
+                <p>CI runs <code>test-uefi</code> on both UEFI and GRUB smoke paths.</p>
             </div>
         </details>
 
         <details class="doc-block">
-            <summary>4 · init_boot_screen + transition</summary>
+            <summary>Init order</summary>
             <div class="doc-block__body">
-                <pre>init_boot_screen
-  console_init → header → memory_init → timer_init
-  → scheduler_init → syscall_init
-  → register_pop_module ×9 → progress → wait Enter
-  → init_transition_to_console
-
-init_transition_to_console
-  multiboot2_parse → idt_init (PIC, masks, load_idt/sti)
-  → kb_init → timer_set_tick_handler(scheduler_tick)
-  → timer_enable → prompt + status bar</pre>
-                <p>Boot screen already runs <code>memory_init</code> (PMM + VMM), <code>timer_init</code>, <code>scheduler_init</code> (records kernel PML4). Console transition enables IRQ1 then PIT. Pop order: spinner, uptime, filesystem, sysinfo, memory, cpu, dolphin, halt, shimjapii.</p>
+                <pre>init / kmain bring-up (typical)
+  multiboot / UEFI tags
+  memory_init (PMM + VMM)
+  idt + PIC
+  rust_init → driver registry + screen/kbd/…
+  timer + scheduler
+  pops register
+  console handoff → shell</pre>
+                <p>Display drawing is Rust (<code>tty0</code>/<code>fb0</code>). Console UX stays in C as a client.</p>
             </div>
         </details>
 
         <details class="doc-block">
-            <summary>8 · Syscall surface (representative)</summary>
+            <summary>Syscalls</summary>
             <div class="doc-block__body">
-                <pre>exit, read, write, open, close, seek, getpid,
-fork, exec, wait,
-malloc, free, mmap, munmap,
-gettime, sleep, yield,
-getcwd, chdir,
-stat, ioctl</pre>
-                <p><code>syscall_dispatch</code> uses the convention in <code>ctx->rax</code>; IDT vector <code>0x80</code> is installed as a user-accessible interrupt gate in <code>idt_init</code>.</p>
+                <pre>open, read, write, close, ioctl
+gettime, sleep, yield
+malloc / free (heap)
+getcwd / chdir (where wired)</pre>
+                <p>Device calls go through the drive registry. Full ring-3 ABI is still ahead.</p>
             </div>
         </details>
 
         <details class="doc-block">
-            <summary>13 · Reading map</summary>
+            <summary>Reading map</summary>
             <div class="doc-block__body">
                 <table class="reading-table">
                     <thead>
@@ -182,52 +176,36 @@ stat, ioctl</pre>
                     </thead>
                     <tbody>
                     <tr>
-                        <td>Entry, long mode, ISR stubs</td>
-                        <td>core/kernel.asm</td>
+                        <td>Entry / long mode</td>
+                        <td>core/kernel.asm, link.ld</td>
                     </tr>
                     <tr>
-                        <td>Link address, sections</td>
-                        <td>link.ld</td>
+                        <td>UEFI loader</td>
+                        <td>uefi/bootx64.c</td>
                     </tr>
                     <tr>
-                        <td>Boot UI + ordered init</td>
-                        <td>core/init.c</td>
+                        <td>Init / shell</td>
+                        <td>core/init.c, core/shell.c, core/kernel.c</td>
                     </tr>
                     <tr>
-                        <td>Shell + IDT/PIC + key queue</td>
-                        <td>core/kernel.c, includes/keyboard_queue.h</td>
+                        <td>Memory</td>
+                        <td>core/memory.c, core/vmm.c</td>
                     </tr>
                     <tr>
-                        <td>VMM / page tables</td>
-                        <td>core/vmm.c, includes/vmm.h</td>
-                    </tr>
-                    <tr>
-                        <td>PMM + heap pools</td>
-                        <td>core/memory.c</td>
-                    </tr>
-                    <tr>
-                        <td>Timer IRQ</td>
-                        <td>core/timer.c + asm stub</td>
-                    </tr>
-                    <tr>
-                        <td>Scheduler + CR3 switch</td>
-                        <td>core/scheduler.c + context_switch.asm</td>
+                        <td>IRQ / timer / sched</td>
+                        <td>core/idt.c, irq.c, timer.c, scheduler.c</td>
                     </tr>
                     <tr>
                         <td>Syscalls</td>
-                        <td>core/syscall.c + asm stub</td>
+                        <td>core/syscall.c</td>
                     </tr>
                     <tr>
-                        <td>Multiboot</td>
-                        <td>core/multiboot2.c, includes/multiboot2.h</td>
+                        <td>Rust drivers / pops</td>
+                        <td>rust/popcorn_kernel/src/</td>
                     </tr>
                     <tr>
-                        <td>Pop registry</td>
-                        <td>core/pop_module.c, includes/pop_module.h</td>
-                    </tr>
-                    <tr>
-                        <td>Individual pops</td>
-                        <td>pops/*.c</td>
+                        <td>Build / CI</td>
+                        <td>scripts/core.sh, .github/workflows/ci.yml</td>
                     </tr>
                     </tbody>
                 </table>
@@ -235,19 +213,18 @@ stat, ioctl</pre>
         </details>
 
         <details class="doc-block">
-            <summary>14 · Caveats</summary>
+            <summary>Caveats</summary>
             <div class="doc-block__body">
-                <p>Educational kernel: syscall gate exists; per-task PML4 is wired, but full user isolation is still evolving.</p>
-                <p>0.6: shell waits on the IRQ key queue with <code>HLT</code>; keep <code>cli</code> windows in context switch short to avoid input latency spikes.</p>
-                <p>Scheduler skips the first PIT tick and refuses switch while <code>bootstrap_on_kmain_stack()</code> is true.</p>
-                <p><code>execute_all_pops</code> is a batch helper; some commands invoke pops directly.</p>
+                <p>v0.7 is pre-1.0. User processes and full isolation are not done.</p>
+                <p>Internal disks stay locked until an explicit install unlock.</p>
+                <p>Scheduler still uses bootstrap guards around early PIT ticks.</p>
             </div>
         </details>
     </section>
 </main>
 
 <footer class="footer-popcorn">
-    <p>&copy; 2026 Knivier. Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" rel="noopener noreferrer" target="_blank">CC BY-NC-SA 4.0</a>. Diagrams mirror the in-repo v0.6 structure. · <a href="tos-ssp.html">SSP</a></p>
+    <p>&copy; 2026 Knivier. Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" rel="noopener noreferrer" target="_blank">CC BY-NC-SA 4.0</a>. Map tracks the v0.7 tree. · <a href="tos-ssp.html">SSP</a></p>
 </footer>
 
 <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>

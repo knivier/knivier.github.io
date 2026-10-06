@@ -125,6 +125,19 @@ code {
     border: 1px solid rgba(0, 255, 157, 0.15);
 }
 
+.about-list {
+    list-style: none;
+    margin: 0 0 1.25rem 0.25rem;
+    padding: 0;
+}
+
+.about-list li {
+    margin-bottom: 0.55rem;
+    color: rgba(224, 224, 224, 0.88);
+    font-size: 1.02rem;
+    line-height: 1.5;
+}
+
 .features {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

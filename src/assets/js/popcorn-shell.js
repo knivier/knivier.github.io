@@ -61,7 +61,6 @@
         { page: "landing", label: "Popcorn" },
         { page: "about", label: "About" },
         { page: "kernel", label: "Operation map" },
-        { page: "source", label: "Source" },
         { ext: "repo", label: "Repository" },
         { ext: "roadmap", label: "Roadmap" },
     ];

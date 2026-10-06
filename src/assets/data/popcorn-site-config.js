@@ -1,11 +1,15 @@
 /**
- * Popcorn microsite - single place to change URLs, version, and external links.
- * Edit this file when renaming pages or bumping the highlighted version string.
+ * Popcorn microsite: URLs, version, external links.
  *
- * data-popcorn-page on #site-shell must be one of: landing | about | kernel | source
+ * Update content without hunting HTML:
+ *   - Nav / version / links  → this file
+ *   - Landing hero/stats/Current/terminal → popcorn-landing-data.js
+ *   - Shell chrome            → popcorn-shell.js
+ *
+ * data-popcorn-page on #site-shell: landing | about | kernel | source
  */
 window.POPCORN_SITE = {
-    version: "0.6",
+    version: "0.7",
 
     /** Portfolio home (relative to each Popcorn HTML file at site root). */
     portfolioHref: "index.html",
@@ -21,7 +25,7 @@ window.POPCORN_SITE = {
     external: {
         repo: "https://github.com/knivier/Popcorn",
         roadmap: "https://github.com/knivier/Popcorn/blob/main/roadmap.md",
-        changelog: "https://github.com/knivier/Popcorn/blob/main/CHANGELOG-0.6.md",
+        changelog: "https://github.com/knivier/Popcorn/blob/main/CHANGELOG.md",
     },
 
     /**
